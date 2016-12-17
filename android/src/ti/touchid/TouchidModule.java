@@ -32,19 +32,15 @@ public class TouchidModule extends KrollModule
 {
 	public static final int PERMISSION_CODE_FINGERPRINT = 99;
 
-
-
 	@Kroll.constant public static final int SUCCESS = 0;
 	@Kroll.constant public static final int SERVICE_MISSING = 1;
 	@Kroll.constant public static final int SERVICE_VERSION_UPDATE_REQUIRED = 2;
 	@Kroll.constant public static final int SERVICE_DISABLED = 3;
 	@Kroll.constant public static final int SERVICE_INVALID = 9;
 
-
 	protected FingerPrintHelper mfingerprintHelper;
 
-	public TouchidModule()
-	{
+	public TouchidModule() {
 		super();
 		Activity activity = TiApplication.getAppRootOrCurrentActivity();
 		if (Build.VERSION.SDK_INT >= 23) {
@@ -61,7 +57,6 @@ public class TouchidModule extends KrollModule
 			Object callback = params.get("callback");
 			if (callback instanceof KrollFunction) {
 				mfingerprintHelper.startListening((KrollFunction)callback, getKrollObject());
-
 			}
 		}
 	}
@@ -79,7 +74,10 @@ public class TouchidModule extends KrollModule
 
 	@Kroll.method
 	public boolean isSupported() {
-		return mfingerprintHelper.isDeviceSupported();
+		if (Build.VERSION.SDK_INT >= 23) {
+			return mfingerprintHelper.isDeviceSupported();
+		}
+		return false;
 	}
 	
 	@Override
@@ -89,7 +87,4 @@ public class TouchidModule extends KrollModule
 			mfingerprintHelper.stopListening();
 		}	
 	}
-
-
 }
-

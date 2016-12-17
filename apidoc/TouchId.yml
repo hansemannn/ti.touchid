@@ -77,13 +77,14 @@ methods:
   - name: deviceCanAuthenticate
     summary: Checks to see if device is configured for Touch ID authentication.
     description: |
-      var TiTouchId = require("ti.touchid");
-      var result = TiTouchId.deviceCanAuthenticate();
-      if (!result.canAuthenticate) {
-        alert('Message: ' + result.error + '\nCode: ' + result.code);  
-        } else {
-          alert('device can authenticate');
-        }
+        Example: 
+            var TiTouchId = require("ti.touchid");
+            var result = TiTouchId.deviceCanAuthenticate();
+            if (!result.canAuthenticate) {
+                alert('Message: ' + result.error + '\nCode: ' + result.code);  
+            } else {
+                alert('device can authenticate');
+            }
     returns:
         type: DeviceCanAuthenticateResult
 

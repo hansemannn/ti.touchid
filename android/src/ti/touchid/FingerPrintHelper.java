@@ -43,10 +43,10 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 	protected boolean mSelfCancelled;
 
 	public FingerPrintHelper() {
-
 		Activity activity = TiApplication.getAppRootOrCurrentActivity();
 		mFingerprintManager = activity.getSystemService(FingerprintManager.class);
 		mKeyguardManager = activity.getSystemService(KeyguardManager.class);
+		
 		try {
 			mKeyStore = KeyStore.getInstance("AndroidKeyStore");
 			mKeyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
@@ -58,9 +58,8 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 		} catch (KeyStoreException e) {
 			throw new RuntimeException("Failed to get an instance of KeyStore", e);
 		} catch (Exception e) {
-
+			throw new RuntimeException("Unknown Ti.TouchID exception thrown", e);
 		}
-
 	}
 
 	protected boolean isDeviceSupported() {
@@ -81,6 +80,7 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 		if (!(mFingerprintManager.isHardwareDetected() && mFingerprintManager.hasEnrolledFingerprints())) {
 			return;
 		}
+        
 		try {
 			if (initCipher()) {
 				mCryptoObject = new FingerprintManager.CryptoObject(mCipher);
@@ -90,6 +90,7 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 		} catch (Exception e) {
 			Log.e(TAG, "Unable to initialize cipher");
 		}
+        
 		this.callback = callback;
 		this.krollObject = obj;
 		mCancellationSignal = new CancellationSignal();
@@ -170,10 +171,8 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-
 	}
 
-	
 	private boolean initCipher() {
 		try {
 			mKeyStore.load(null);
@@ -211,5 +210,4 @@ public class FingerPrintHelper extends FingerprintManager.AuthenticationCallback
 		}
 		return response;
 	}
-
 }
