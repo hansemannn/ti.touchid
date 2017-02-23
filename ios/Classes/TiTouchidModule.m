@@ -65,11 +65,10 @@
         return NUMBOOL(NO);
     }
     
-    LAContext *context = [[LAContext new] autorelease];
     __block BOOL isSupported = NO;
     
     TiThreadPerformOnMainThread(^{
-        isSupported = [context canEvaluatePolicy:authPolicy error:nil];
+        isSupported = [[self authContext] canEvaluatePolicy:authPolicy error:nil];
     },YES);
     
     return NUMBOOL(isSupported);
@@ -190,6 +189,7 @@
     }
     
     [[self authContext] invalidate];
+    RELEASE_TO_NIL(authContext);
 }
 
 - (NSDictionary*)deviceCanAuthenticate:(id)unused
