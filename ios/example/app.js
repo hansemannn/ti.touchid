@@ -53,6 +53,8 @@ btn.addEventListener('click', function(){
 			} else {
 				// do something useful
 				alert('YAY! success');
+				// Uncomment the next if you want to force the TouchID dialog to show every time
+				// TiTouchId.invalidate();
 			}
 		}
 	});
