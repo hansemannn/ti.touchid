@@ -44,13 +44,17 @@ public class TouchidModule extends KrollModule
 		super();
 		Activity activity = TiApplication.getAppRootOrCurrentActivity();
 		if (Build.VERSION.SDK_INT >= 23) {
-			mfingerprintHelper = new FingerPrintHelper();
+			try {
+				mfingerprintHelper = new FingerPrintHelper();
+			} catch (Exception e) {
+				mfingerprintHelper = null;
+			}
 		}
 	}
 
 	@Kroll.method
 	public void authenticate(HashMap params) {
-		if (params == null) {
+		if (params == null || mfingerprintHelper == null) {
 			return;
 		}
 		if (params.containsKey("callback")) {
@@ -63,18 +67,25 @@ public class TouchidModule extends KrollModule
 
 	@Kroll.method
 	public HashMap deviceCanAuthenticate() {
-		if (Build.VERSION.SDK_INT >= 23) {
+		if (Build.VERSION.SDK_INT >= 23 && mfingerprintHelper != null) {
 			return mfingerprintHelper.deviceCanAuthenticate();
 		}
+
 		KrollDict response = new KrollDict();
 		response.put("canAuthenticate", false);
-		response.put("error", "Device is running with API < 23");
+
+		if (Build.VERSION.SDK_INT < 23) {
+			response.put("error", "Device is running with API < 23");
+		} else {
+			response.put("error", "Device does not support fingerprint authentication");
+		}
+
 		return response;
 	}
 
 	@Kroll.method
 	public boolean isSupported() {
-		if (Build.VERSION.SDK_INT >= 23) {
+		if (Build.VERSION.SDK_INT >= 23 && mfingerprintHelper != null) {
 			return mfingerprintHelper.isDeviceSupported();
 		}
 		return false;
