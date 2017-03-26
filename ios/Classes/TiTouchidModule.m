@@ -108,6 +108,8 @@
         return;
     }
     
+    [self replaceValue:callback forKey:@"callback" notification:NO];
+    
     // Fail when Touch ID is not supported by the current device
 	if([isSupportedDict valueForKey:@"canAuthenticate"] == NUMBOOL(NO)) {
         TiThreadPerformOnMainThread(^{
@@ -117,7 +119,7 @@
                 @"success": NUMBOOL(NO)
             };
 
-            [callback call:[NSArray arrayWithObjects:event, nil] thisObject:self];
+            [self fireCallback:@"callback" withArg:event withSource:self];
         }, NO);
 		return;
 	}
@@ -144,23 +146,19 @@
     
     // Display the dialog if the security policy allows it (= device has Touch ID enabled)
     if ([[self authContext] canEvaluatePolicy:authPolicy error:&authError]) {
-        // Make sure this runs on the main thread, for two reasons:
-        // 1. This will show an alert dialog, which is a UI component
-        // 2. The callback function (KrollCallback) needs to run on main thread
         TiThreadPerformOnMainThread(^{
             [[self authContext] evaluatePolicy:authPolicy localizedReason:reason reply:^(BOOL success, NSError *error) {
-                NSMutableDictionary *event = [NSMutableDictionary dictionary];
-                if(error != nil) {
-                    [event setValue:[error localizedDescription] forKey:@"error"];
-                    [event setValue:NUMINTEGER([error code]) forKey:@"code"];
-                }
-                [event setValue:NUMBOOL(success) forKey:@"success"];
-                [callback call:[NSArray arrayWithObjects:event, nil] thisObject:self];
+                NSDictionary *event = @{@"success": NUMBOOL(YES)};
+                
+                // TIMOB-24489: Use this callback invocation to prevent issues with Kroll-Thread
+                // and proxies that open another thread (e.g. Ti.Network)
+                [self fireCallback:@"callback" withArg:event withSource:self];
             }];
         }, NO);
+        
         return;
     }
-	
+    
     // Again, make sure the callback function runs on the main thread
     TiThreadPerformOnMainThread(^{
         NSMutableDictionary *event = [NSMutableDictionary dictionary];
@@ -173,7 +171,7 @@
         }
         
         [event setValue:NUMBOOL(NO) forKey:@"success"];
-        [callback call:[NSArray arrayWithObjects:event, nil] thisObject:self];
+        [self fireCallback:@"callback" withArg:event withSource:self];
     }, NO);
 }
 
