@@ -147,7 +147,14 @@
     if ([[self authContext] canEvaluatePolicy:authPolicy error:&authError]) {
         TiThreadPerformOnMainThread(^{
             [[self authContext] evaluatePolicy:authPolicy localizedReason:reason reply:^(BOOL success, NSError *error) {
-                NSDictionary *event = @{@"success": NUMBOOL(YES)};
+                NSMutableDictionary *event = [NSMutableDictionary dictionary];
+                
+                if (error != nil) {
+                    [event setValue:[error localizedDescription] forKey:@"error"];
+                    [event setValue:NUMINTEGER([error code]) forKey:@"code"];
+                }
+                
+                [event setValue:NUMBOOL(success) forKey:@"success"];
                 
                 // TIMOB-24489: Use this callback invocation to prevent issues with Kroll-Thread
                 // and proxies that open another thread (e.g. Ti.Network)
